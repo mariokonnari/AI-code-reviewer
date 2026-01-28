@@ -95,11 +95,6 @@ export default function Home() {
     alert('Review saved to workspace! 💾');
   };
 
-  const handleExport = () => {
-    // We'll implement this in the next sprint
-    alert('PDF export coming in next sprint! 📄');
-  };
-
   return (
     <main className="container mx-auto px-4 py-8 max-w-7xl">
       {/* Header */}
@@ -158,7 +153,9 @@ export default function Home() {
             isLoading={isLoading}
             tokensUsed={tokensUsed}
             onSave={review ? handleSave : undefined}
-            onExport={review ? handleExport : undefined}
+            code={code}
+            language={language}
+            reviewType={reviewType}
           />
         </div>
       </div>

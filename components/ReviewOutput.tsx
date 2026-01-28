@@ -2,13 +2,17 @@
 
 import { useState } from 'react';
 import ReactMarkdown from 'react-markdown';
+import { exportToPDF } from '@/lib/pdfExport';
+import { CodeReview } from '@/types';
 
 interface ReviewOutputProps {
   review: string;
   isLoading: boolean;
   tokensUsed?: number;
   onSave?: () => void;
-  onExport?: () => void;
+  code?: string;
+  language?: string;
+  reviewType?: string;
 }
 
 export default function ReviewOutput({
@@ -16,7 +20,9 @@ export default function ReviewOutput({
   isLoading,
   tokensUsed,
   onSave,
-  onExport,
+  code,
+  language,
+  reviewType,
 }: ReviewOutputProps) {
   const [copied, setCopied] = useState(false);
 
@@ -75,9 +81,19 @@ export default function ReviewOutput({
               💾 Save
             </button>
           )}
-          {onExport && (
+          {code && language && reviewType && (
             <button
-              onClick={onExport}
+              onClick={() => {
+                const reviewData: CodeReview = {
+                  id: Date.now().toString(),
+                  code,
+                  language,
+                  reviewType: reviewType as any,
+                  aiResponse: review,
+                  timestamp: Date.now(),
+                };
+                exportToPDF(reviewData)
+              }}
               className="px-3 py-1.5 bg-green-600 border border-green-500 rounded-lg text-xs text-white hover:bg-green-700 transition-colors"
             >
               📄 Export PDF
@@ -90,20 +106,25 @@ export default function ReviewOutput({
         <div className="prose prose-invert prose-sm max-w-none">
           <ReactMarkdown
             components={{
-              code: ({ node, inline, ...props }) => (
-                inline ? (
-                  <code className="bg-gray-800 px-1.5 py-0.5 rounded text-blue-400" {...props} />
+              code: ({ node, className, children, ...props }: any) => {
+                const isInline = !className;
+                return isInline ? (
+                  <code className="bg-gray-800 px-1.5 py-0.5 rounded text-blue-400" {...props}>
+                    {children}
+                  </code>
                 ) : (
-                  <code className="block bg-gray-800 p-3 rounded-lg overflow-x-auto" {...props} />
-                )
-              ),
-              h1: ({ node, ...props }) => <h1 className="text-xl font-bold text-gray-100 mt-4 mb-2" {...props} />,
-              h2: ({ node, ...props }) => <h2 className="text-lg font-semibold text-gray-200 mt-3 mb-2" {...props} />,
-              h3: ({ node, ...props }) => <h3 className="text-base font-semibold text-gray-300 mt-2 mb-1" {...props} />,
-              p: ({ node, ...props }) => <p className="text-gray-300 mb-3 leading-relaxed" {...props} />,
-              ul: ({ node, ...props }) => <ul className="list-disc list-inside text-gray-300 space-y-1 mb-3" {...props} />,
-              ol: ({ node, ...props }) => <ol className="list-decimal list-inside text-gray-300 space-y-1 mb-3" {...props} />,
-              li: ({ node, ...props }) => <li className="ml-4" {...props} />,
+                  <code className="block bg-gray-800 p-3 rounded-lg overflow-x-auto" {...props}>
+                    {children}
+                  </code>
+                );
+              },
+              h1: ({ node, ...props }: any) => <h1 className="text-xl font-bold text-gray-100 mt-4 mb-2" {...props} />,
+              h2: ({ node, ...props }: any) => <h2 className="text-lg font-semibold text-gray-200 mt-3 mb-2" {...props} />,
+              h3: ({ node, ...props }: any) => <h3 className="text-base font-semibold text-gray-300 mt-2 mb-1" {...props} />,
+              p: ({ node, ...props }: any) => <p className="text-gray-300 mb-3 leading-relaxed" {...props} />,
+              ul: ({ node, ...props }: any) => <ul className="list-disc list-inside text-gray-300 space-y-1 mb-3" {...props} />,
+              ol: ({ node, ...props }: any) => <ol className="list-decimal list-inside text-gray-300 space-y-1 mb-3" {...props} />,
+              li: ({ node, ...props }: any) => <li className="ml-4" {...props} />,
             }}
           >
             {review}
