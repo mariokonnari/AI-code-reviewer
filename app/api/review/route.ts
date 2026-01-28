@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { openai, MODELS } from '@/lib/openai';
+import { getModel, MODELS } from '@/lib/gemini';
 import { getReviewPrompt } from '@/lib/prompts';
 import { ReviewRequest } from '@/types';
 
@@ -23,43 +23,46 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Call OpenAI
+    // Call Gemini
+    const model = getModel(MODELS.SMART); // Use FAST for quicker responses
     const prompt = getReviewPrompt(code, language, reviewType);
     
-    const completion = await openai.chat.completions.create({
-      model: MODELS.FAST, // Use SMART for better quality but higher cost
-      messages: [
-        {
-          role: 'system',
-          content: 'You are an expert code reviewer with years of experience across multiple programming languages and frameworks.'
-        },
-        {
-          role: 'user',
-          content: prompt
-        }
-      ],
-      temperature: 0.7,
-      max_tokens: 2000,
-    });
-
-    const aiResponse = completion.choices[0]?.message?.content;
+    const systemInstruction = 'You are an expert code reviewer with years of experience across multiple programming languages and frameworks. Provide detailed, actionable feedback in a well-structured format using markdown.';
+    
+    const fullPrompt = `${systemInstruction}\n\n${prompt}`;
+    
+    const result = await model.generateContent(fullPrompt);
+    const response = result.response;
+    const aiResponse = response.text();
 
     if (!aiResponse) {
-      throw new Error('No response from OpenAI');
+      throw new Error('No response from Gemini');
     }
+
+    // Gemini doesn't return token count in the same way, but we can estimate
+    const estimatedTokens = Math.ceil((code.length + aiResponse.length) / 4);
 
     return NextResponse.json({
       success: true,
       review: aiResponse,
-      tokensUsed: completion.usage?.total_tokens || 0,
+      tokensUsed: estimatedTokens,
     });
 
   } catch (error: any) {
     console.error('API Error:', error);
     
+    // Handle Gemini-specific errors
+    let errorMessage = 'Failed to generate review';
+    
+    if (error.message?.includes('API key')) {
+      errorMessage = 'Invalid API key. Please check your Gemini API key in .env.local';
+    } else if (error.message?.includes('quota')) {
+      errorMessage = 'Rate limit exceeded. Please wait a moment and try again.';
+    }
+    
     return NextResponse.json(
       { 
-        error: 'Failed to generate review',
+        error: errorMessage,
         details: error.message 
       },
       { status: 500 }
