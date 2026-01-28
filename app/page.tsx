@@ -1,65 +1,154 @@
-import Image from "next/image";
+'use client';
+
+import { useState } from 'react';
+import { ReviewType, CodeReview } from '@/types';
+import CodeInput from '@/components/CodeInput';
+import ReviewOutput from '@/components/ReviewOutput';
+import ReviewTypeSelector from '@/components/ReviewTypeSelector';
 
 export default function Home() {
+  const [code, setCode] = useState('');
+  const [language, setLanguage] = useState('javascript');
+  const [reviewType, setReviewType] = useState<ReviewType>('general');
+  const [review, setReview] = useState('');
+  const [isLoading, setIsLoading] = useState(false);
+  const [tokensUsed, setTokensUsed] = useState<number>();
+  const [error, setError] = useState('');
+
+  const handleReview = async () => {
+    if (!code.trim()) {
+      setError('Please enter some code to review');
+      return;
+    }
+
+    if (code.length > 10000) {
+      setError('Code exceeds maximum length of 10,000 characters');
+      return;
+    }
+
+    setIsLoading(true);
+    setError('');
+    setReview('');
+
+    try {
+      const response = await fetch('/api/review', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          code,
+          language,
+          reviewType,
+        }),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.error || 'Failed to generate review');
+      }
+
+      setReview(data.review);
+      setTokensUsed(data.tokensUsed);
+    } catch (err: any) {
+      let errorMessage = err.message || "Something went wrong. Please try again.";
+
+      if (errorMessage.includes('quota') || errorMessage.includes('rate limit')) {
+        errorMessage = "⏱️ Rate limit exceeded. Please wait 60 seconds and try again."
+      }
+
+      setError(errorMessage);
+      console.error('Review error:', err);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleSave = () => {
+    const reviewData: CodeReview = {
+      id: Date.now().toString(),
+      code,
+      language,
+      reviewType,
+      aiResponse: review,
+      timestamp: Date.now(),
+      title: `${language} - ${reviewType} review`,
+    };
+
+    const saved = JSON.parse(localStorage.getItem('code-reviews') || '[]');
+    saved.unshift(reviewData);
+    localStorage.setItem('code-reviews', JSON.stringify(saved.slice(0, 50))); // Keep last 50
+
+    alert('Review saved to workspace! 💾');
+  };
+
+  const handleExport = () => {
+    // We'll implement this in the next sprint
+    alert('PDF export coming in next sprint! 📄');
+  };
+
   return (
-    <div className="flex min-h-screen items-center justify-center bg-zinc-50 font-sans dark:bg-black">
-      <main className="flex min-h-screen w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-black sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
-        />
-        <div className="flex flex-col items-center gap-6 text-center sm:items-start sm:text-left">
-          <h1 className="max-w-xs text-3xl font-semibold leading-10 tracking-tight text-black dark:text-zinc-50">
-            To get started, edit the page.tsx file.
-          </h1>
-          <p className="max-w-md text-lg leading-8 text-zinc-600 dark:text-zinc-400">
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Learning
-            </a>{" "}
-            center.
-          </p>
-        </div>
-        <div className="flex flex-col gap-4 text-base font-medium sm:flex-row">
-          <a
-            className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-foreground px-5 text-background transition-colors hover:bg-[#383838] dark:hover:bg-[#ccc] md:w-[158px]"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
+    <main className="container mx-auto px-4 py-8 max-w-7xl">
+      {/* Header */}
+      <div className="text-center mb-12">
+        <h1 className="text-4xl md:text-5xl font-bold text-white mb-4">
+          🤖 AI Code Review Assistant
+        </h1>
+        <p className="text-gray-400 text-lg">
+          Get instant, expert-level code reviews powered by AI
+        </p>
+      </div>
+
+      {/* Main Content */}
+      <div className="grid md:grid-cols-2 gap-8 mb-8">
+        {/* Left Column - Input */}
+        <div className="space-y-6">
+          <CodeInput
+            value={code}
+            onChange={setCode}
+            language={language}
+            onLanguageChange={setLanguage}
+            disabled={isLoading}
+          />
+          
+          <ReviewTypeSelector
+            selected={reviewType}
+            onChange={setReviewType}
+            disabled={isLoading}
+          />
+
+          <button
+            onClick={handleReview}
+            disabled={isLoading || !code.trim() || code.length > 10000}
+            className="w-full py-4 bg-blue-600 hover:bg-blue-700 disabled:bg-gray-700 disabled:cursor-not-allowed text-white font-semibold rounded-lg transition-all duration-200 transform hover:scale-105 disabled:transform-none"
           >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={16}
-            />
-            Deploy Now
-          </a>
-          <a
-            className="flex h-12 w-full items-center justify-center rounded-full border border-solid border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Documentation
-          </a>
+            {isLoading ? 'Analyzing...' : '🚀 Review My Code'}
+          </button>
+
+          {error && (
+            <div className="p-4 bg-red-900/20 border border-red-700 rounded-lg text-red-400 text-sm">
+              ⚠️ {error}
+            </div>
+          )}
         </div>
-      </main>
-    </div>
+
+        {/* Right Column - Output */}
+        <div>
+          <ReviewOutput
+            review={review}
+            isLoading={isLoading}
+            tokensUsed={tokensUsed}
+            onSave={review ? handleSave : undefined}
+            onExport={review ? handleExport : undefined}
+          />
+        </div>
+      </div>
+
+      {/* Footer */}
+      <div className="text-center text-gray-500 text-sm mt-12">
+        <p>Built with Next.js, React, and OpenAI • By [Your Name]</p>
+      </div>
+    </main>
   );
 }

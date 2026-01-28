@@ -24,7 +24,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Call Gemini
-    const model = getModel(MODELS.SMART); // Use FAST for quicker responses
+    const model = getModel(MODELS.FAST); // Use FAST for quicker responses
     const prompt = getReviewPrompt(code, language, reviewType);
     
     const systemInstruction = 'You are an expert code reviewer with years of experience across multiple programming languages and frameworks. Provide detailed, actionable feedback in a well-structured format using markdown.';
