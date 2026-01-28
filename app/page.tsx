@@ -1,10 +1,11 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { ReviewType, CodeReview } from '@/types';
 import CodeInput from '@/components/CodeInput';
 import ReviewOutput from '@/components/ReviewOutput';
 import ReviewTypeSelector from '@/components/ReviewTypeSelector';
+import Link from 'next/link';
 
 export default function Home() {
   const [code, setCode] = useState('');
@@ -14,6 +15,17 @@ export default function Home() {
   const [isLoading, setIsLoading] = useState(false);
   const [tokensUsed, setTokensUsed] = useState<number>();
   const [error, setError] = useState('');
+  const [savedCount, setSavedCount] = useState(0);
+
+  useEffect(() => {
+    const updateCount = () => {
+      const saved = JSON.parse(localStorage.getItem('code-reviews') || '[]');
+      setSavedCount(saved.length);
+    };
+
+    updateCount();
+    window.addEventListener('storage', updateCount);
+  }, []);
 
   const handleReview = async () => {
     if (!code.trim()) {
@@ -98,6 +110,12 @@ export default function Home() {
         <p className="text-gray-400 text-lg">
           Get instant, expert-level code reviews powered by AI
         </p>
+        <Link
+          href="/workspace"
+          className="inline-block mt-4 px-6 py-2 bg-gray-800 hover:bg-gray-700 border border-gray-700 text-gray-300 rounded-lg transition-colors"
+        >
+          💾 View Workspace ({savedCount} saved)
+        </Link>
       </div>
 
       {/* Main Content */}
