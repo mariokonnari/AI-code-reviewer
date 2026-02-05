@@ -14,7 +14,7 @@ A powerful web application that provides instant, AI-powered code reviews using 
 
 ## 🚀 Live Demo
 
-[Add your deployed URL here]
+https://ai-code-reviewer-tau-coral.vercel.app/
 
 ## 🛠️ Tech Stack
 
