@@ -162,7 +162,7 @@ export default function Home() {
 
       {/* Footer */}
       <div className="text-center text-gray-500 text-sm mt-12">
-        <p>Built with Next.js, React, and OpenAI • By [Your Name]</p>
+        <p>Built with Next.js, React, and OpenAI • By Marios Konnaris</p>
       </div>
     </main>
   );

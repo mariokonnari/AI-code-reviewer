@@ -1,18 +1,31 @@
 {
   "name": "ai-code-reviewer",
-  "version": "0.1.0",
+  "version": "1.0.0",
+  "description": "AI-powered code review assistant using Google Gemini API",
+  "author": "Marios Konnaris <mariokonnari@gmail.com>",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/mariokonnari/AI-code-reviewer"
+  },
+  "keywords": [
+    "ai",
+    "code-review",
+    "gemini",
+    "nextjs",
+    "react",
+    "typescript"
+  ],
   "private": true,
   "scripts": {
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "eslint"
+    "lint": "next lint"
   },
   "dependencies": {
     "@google/generative-ai": "^0.24.1",
-    "jspdf": "^4.0.0",
+    "jspdf": "^2.5.2",
     "next": "16.1.1",
-    "openai": "^6.15.0",
     "react": "19.2.3",
     "react-dom": "19.2.3",
     "react-markdown": "^10.1.0"
