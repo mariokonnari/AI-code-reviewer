@@ -169,10 +169,10 @@ This project is licensed under the MIT License.
 ## 📸 Screenshots
 
 ### Main Interface
-![Main Interface](/ai-code-reviewer/public/screenshots/main_interface.png)
+![Main Interface](./public/screenshots/main_interface.png)
 
 ### Workspace
-![Workspace](/ai-code-reviewer/public/screenshots/workspace.png)
+![Workspace](./public/screenshots/workspace.png)
 
 ### PDF Export
-![PDF Export](/ai-code-reviewer/public/screenshots/pdf_export.png)
+![PDF Export](./public/screenshots/pdf_export.png)
