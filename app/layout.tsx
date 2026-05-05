@@ -13,8 +13,9 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Code Reviewer App",
-  description: "Optimize your code",
+  title: "CodeReview AI — Instant AI-Powered Code Analysis",
+  description:
+    "Get expert-level code reviews in seconds. Catch bugs, security vulnerabilities, and performance issues powered by Google Gemini 2.5.",
 };
 
 export default function RootLayout({
@@ -23,9 +24,9 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en">
+    <html lang="en" className="dark">
       <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased`}
+        className={`${geistSans.variable} ${geistMono.variable} antialiased bg-[#0a0e1a] text-white min-h-screen`}
       >
         {children}
       </body>
